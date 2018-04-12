@@ -80,10 +80,11 @@ html,body {
 }
 
 .weekday-title {
-    color: white;
     background-color: black;
     text-align: center;
     padding: 0.5em 0;
+    color: white;
+    margin: 0;
 }
 
 .weekday-title::after {
@@ -95,4 +96,31 @@ html,body {
     display: block;
     margin: 0.25em auto 0;
     line-height: 1.6em;
+}
+
+.weather-icons {
+    background-color: lightblue;
+    align-content: center;
+    align-items: center;
+    display: flex;
+    height: 5em;
+}
+
+.weather-icon {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    position: relative;
+    transform: scale(3);
+    flex: 1 1 1em;
+    height: 50px;
+}
+
+.weather-temp {
+    position: relative;
+    text-align: center;
+    top: 0.25em;
+    width: 100%;
+    z-index: 1;
+    height: 0;
 }

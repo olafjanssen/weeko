@@ -3,6 +3,7 @@ const Weeko = (function (window, moment) {
     'use strict';
 
     let element;
+    let weather;
 
     function renderDay(day) {
         var el = document.createElement('div');
@@ -10,6 +11,14 @@ const Weeko = (function (window, moment) {
         el.setAttribute('data-weekday', day.datum.weekday());
 
         let content = '<h1 class="weekday-title">' + day.datum.locale('nl').format('dddd') + '</h1>';
+        if (day.maxTemp) {
+            content += '<div class="weather-temp">' + Math.round(day.maxTemp - 272.15) + '°C</div>';
+        }
+        content += '<div class="weather-icons">';
+        day.weatherIcons.forEach(function (wi) {
+            content += '<div class="weather-icon" style="background-image:url(' + wi + ');"></div>';
+        });
+        content += '</div>';
 
         el.innerHTML = content;
         element.appendChild(el);
@@ -19,6 +28,15 @@ const Weeko = (function (window, moment) {
         return new Promise(function (resolve, reject) {
             let day = {};
             day.datum = datum;
+            day.maxTemp = 0;
+
+            // get weather
+            day.weatherIcons = weather.list.filter(function (w) {
+                return (moment(w.dt * 1000).startOf('day').diff(day.datum) === 0)
+            }).map(function (a) {
+                day.maxTemp = window.Math.max(day.maxTemp, a.main.temp_max);
+                return 'http://openweathermap.org/img/w/' + a.weather[0].icon + '.png';
+            });
 
             resolve(day);
         });
@@ -30,7 +48,7 @@ const Weeko = (function (window, moment) {
             if (localStorage.getItem('weather')) {
                 resolve(JSON.parse(localStorage.getItem('weather')));
             } else {
-               var xhr = new XMLHttpRequest();
+                var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function () {
                     if (xhr.readyState === XMLHttpRequest.DONE) {
                         if (xhr.status === 200) {
@@ -50,14 +68,12 @@ const Weeko = (function (window, moment) {
 
 
     function init(selector) {
-        loadJSON('http://api.openweathermap.org/data/2.5/forecast?q=Geldrop,NL&appid=35a91f92624095eff547f4c8fdf15807').then(function (weather) {
-
-            console.log(weather);
-
+        loadJSON('http://api.openweathermap.org/data/2.5/forecast?q=Geldrop,NL&appid=35a91f92624095eff547f4c8fdf15807').then(function (w) {
+            weather = w;
             element = window.document.querySelector(selector);
 
             // get a series of dates
-            let startDate = moment().startOf('day').subtract(7, 'days'),
+            let startDate = moment().startOf('day').subtract(0, 'days'),
                 endDate = moment().startOf('day').add(14, 'days');
 
             let datum = startDate;
