@@ -1,3 +1,9 @@
+@font-face {
+    font-family: "emojis";
+    src: url("../fonts/emojione-svg.otf") format('opentype');
+}
+
+
 html,body {
     margin: 0;
     padding: 0;
@@ -6,6 +12,7 @@ html,body {
 
 #scroll-container {
     overflow-x: scroll;
+    overflow-y: hidden;
     width: 100vw;
     height: 100vh;
     display: block;
@@ -30,57 +37,65 @@ html,body {
     align-self: flex-start;
 }
 
-.calendar-day[data-weekday="0"] {
-    background-color: yellow;
+.calendar-day[data-weekday="1"] {
+    background-color: orange;
 }
 .calendar-day[data-weekday="0"] .weekday-title::after {
-    content: "🌞";
-}
-
-.calendar-day[data-weekday="1"] {
-    background-color: red;
-}
-.calendar-day[data-weekday="1"] .weekday-title::after {
-    content: "🌜";
+    background-image: url('../emojis/1f31e.png');
 }
 
 .calendar-day[data-weekday="2"] {
-    background-color: deeppink;
+    background-color: red;
 }
-.calendar-day[data-weekday="2"] .weekday-title::after {
-    content: "🦕";
+.calendar-day[data-weekday="1"] .weekday-title::after {
+    background-image: url('../emojis/1f31c.png');
 }
 
 .calendar-day[data-weekday="3"] {
-    background-color: purple;
+    background-color: deeppink;
 }
-.calendar-day[data-weekday="3"] .weekday-title::after {
-    content: "🐶";
+.calendar-day[data-weekday="2"] .weekday-title::after {
+    background-image: url('../emojis/1f996.png');
 }
 
 .calendar-day[data-weekday="4"] {
-    background-color: dodgerblue;
+    background-color: purple;
 }
-.calendar-day[data-weekday="4"] .weekday-title::after {
-    content: "⚡️";
+.calendar-day[data-weekday="3"] .weekday-title::after {
+    background-image: url('../emojis/1f436.png');
 }
 
 .calendar-day[data-weekday="5"] {
-    background-color: limegreen;
+    background-color: dodgerblue;
 }
-.calendar-day[data-weekday="5"] .weekday-title::after {
-    content: "👫";
+.calendar-day[data-weekday="4"] .weekday-title::after {
+    background-image: url('../emojis/26a1.png');
 }
 
 .calendar-day[data-weekday="6"] {
-    background-color: green;
+    background-color: limegreen;
+}
+.calendar-day[data-weekday="5"] .weekday-title::after {
+    background-image: url('../emojis/1f46b.png');
+}
+
+.calendar-day[data-weekday="0"] {
+    background-color: limegreen;
 }
 .calendar-day[data-weekday="6"] .weekday-title::after {
-    content: "🛠";
+    background-image: url('../emojis/1f6e0.png');
+}
+
+.monthday-title {
+    /*background-color: rgba(0,0,0,0.1);*/
+    text-align: center;
+    padding: 0.5em 0;
+    color: white;
+    margin: 0;
 }
 
 .weekday-title {
-    background-color: black;
+    /*background-color: rgba(0,0,0,0.1);*/
     text-align: center;
     padding: 0.5em 0;
     color: white;
@@ -88,6 +103,9 @@ html,body {
 }
 
 .weekday-title::after {
+    color: black;
+    font-weight: normal;
+    font-family: emojis, Arial, sans-serif;
     font-size: 2em;
     background-color: white;
     width: 1.5em;
@@ -96,6 +114,10 @@ html,body {
     display: block;
     margin: 0.25em auto 0;
     line-height: 1.6em;
+    content: "";
+    background-position: center;
+    background-size: 80%;
+    background-repeat: no-repeat;
 }
 
 .weather-icons {
@@ -119,8 +141,36 @@ html,body {
 .weather-temp {
     position: relative;
     text-align: center;
+    font-weight: bold;
+    font-size: 1.5em;
     top: 0.25em;
     width: 100%;
     z-index: 1;
     height: 0;
+}
+
+.event-icons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.event-icon {
+    color: white;
+    font-weight: normal;
+    font-family: emojis, Arial, sans-serif;
+    border-top: 1px solid black;
+    flex: 1 1 auto;
+    font-size: 3em;
+    padding: 0.25em 0;
+    text-align: center;
+    display: flex;
+    align-items: center;
+}
+
+.event-icon img {
+    flex: 1 1 1em;
+    object-fit: contain;
+    width: 25%;
+    margin: 0 0.1em;
 }
