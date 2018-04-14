@@ -73,7 +73,8 @@
         if (isSignedIn) {
             authorizeButton.style.display = 'none';
             // signoutButton.style.display = 'block';
-            listUpcomingEvents();
+            //listUpcomingEvents();
+            Weeko.init('#calendar');
         } else {
             authorizeButton.style.display = 'block';
             signoutButton.style.display = 'none';
@@ -94,26 +95,7 @@
         gapi.auth2.getAuthInstance().signOut();
     }
 
-     /**
-     * Print the summary and start datetime/date of the next ten events in
-     * the authorized user's calendar. If no events are found an
-     * appropriate message is printed.
-     */
-    function listUpcomingEvents() {
-        gapi.client.calendar.events.list({
-            'calendarId': '9brfvbpc0vmifsudg7ggmnhh2c@group.calendar.google.com',
-            'timeMin': (moment().subtract(10,'days')).toISOString(),
-            'timeMax': (moment().add(365,'days')).toISOString(),
-            'showDeleted': false,
-            'singleEvents': true,
-            'maxResults': 100,
-            'orderBy': 'startTime'
-        }).then(function(response) {
-            var events = response.result.items;
-            console.log(events);
-            Weeko.init('#calendar', events);
-        });
-    }
+
 </script>
 
 <script async defer src="https://apis.google.com/js/api.js" onload="this.onload=function(){};handleClientLoad()" onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>

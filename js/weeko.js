@@ -46,7 +46,7 @@ var Weeko = function (window, moment) {
             content += '<div class="today-message"><img src="emojis/' + timeImg[hourIndex] + '.png"</div>';
 
             requestAnimationFrame(function () {
-                element.parentElement.scrollLeft = el.getBoundingClientRect().left;
+                    element.parentElement.scrollLeft += el.getBoundingClientRect().left;
             });
         }
 
@@ -156,16 +156,37 @@ var Weeko = function (window, moment) {
         });
     }
 
-    function init(selector, es) {
+    /**
+     * Print the summary and start datetime/date of the next ten events in
+     * the authorized user's calendar. If no events are found an
+     * appropriate message is printed.
+     */
+    function listUpcomingEvents() {
+        gapi.client.calendar.events.list({
+            'calendarId': '9brfvbpc0vmifsudg7ggmnhh2c@group.calendar.google.com',
+            'timeMin': (moment().subtract(10,'days')).toISOString(),
+            'timeMax': (moment().add(365,'days')).toISOString(),
+            'showDeleted': false,
+            'singleEvents': true,
+            'maxResults': 100,
+            'orderBy': 'startTime'
+        }).then(function(response) {
+            var events = response.result.items;
+            console.log(events);
+            loadRest(events);
+        });
+    }
+
+    function loadRest(es){
         loadJSON('http://api.openweathermap.org/data/2.5/forecast?q=Geldrop,NL&appid=35a91f92624095eff547f4c8fdf15807').then(function (w) {
             weather = w;
-            element = window.document.querySelector(selector);
-
             events = es;
 
             // get a series of dates
             var startDate = moment().startOf('day').subtract(10, 'days'),
                 endDate = moment().startOf('day').add(31, 'days');
+
+            element.innerHTML = '';
 
             var datum = startDate;
             while (datum < endDate) {
@@ -178,10 +199,18 @@ var Weeko = function (window, moment) {
             }
         });
 
+    }
+
+    function init(selector, es) {
+        element = window.document.querySelector(selector);
+
+        listUpcomingEvents();
+
         // set auto-refresh
-        setTimeout(function () {
-            window.location.reload();
-        }, 1000 * 60 * 5);
+        setInterval(function () {
+            //window.location.reload();
+            listUpcomingEvents();
+        }, 1000 * 60 * 60);
     }
 
     var timeImg = ["1f550", "1f551", "1f552", "1f553", "1f554", "1f555", "1f556", "1f557", "1f558", "1f559", "1f55a", "1f55b", "1f55c", "1f55d", "1f55e", "1f55f", "1f560", "1f561", "1f562", "1f563", "1f564", "1f565", "1f566", "1f567"];
