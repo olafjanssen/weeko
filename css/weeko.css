@@ -28,6 +28,7 @@ html,body {
     justify-content: flex-start;
     align-items: flex-start;
     align-content: flex-start;
+    position: relative;
 }
 
 .calendar-day {
@@ -35,55 +36,35 @@ html,body {
     display: inline-block;
     flex: 0 0 14.28vw;
     align-self: flex-start;
+    position: relative;
 }
 
 .calendar-day[data-weekday="1"] {
     background-color: orange;
 }
-.calendar-day[data-weekday="0"] .weekday-title::after {
-    background-image: url('../emojis/1f31e.png');
-}
 
 .calendar-day[data-weekday="2"] {
     background-color: red;
-}
-.calendar-day[data-weekday="1"] .weekday-title::after {
-    background-image: url('../emojis/1f31c.png');
 }
 
 .calendar-day[data-weekday="3"] {
     background-color: deeppink;
 }
-.calendar-day[data-weekday="2"] .weekday-title::after {
-    background-image: url('../emojis/1f996.png');
-}
 
 .calendar-day[data-weekday="4"] {
     background-color: purple;
-}
-.calendar-day[data-weekday="3"] .weekday-title::after {
-    background-image: url('../emojis/1f436.png');
 }
 
 .calendar-day[data-weekday="5"] {
     background-color: dodgerblue;
 }
-.calendar-day[data-weekday="4"] .weekday-title::after {
-    background-image: url('../emojis/26a1.png');
-}
 
 .calendar-day[data-weekday="6"] {
     background-color: limegreen;
 }
-.calendar-day[data-weekday="5"] .weekday-title::after {
-    background-image: url('../emojis/1f46b.png');
-}
 
 .calendar-day[data-weekday="0"] {
     background-color: limegreen;
-}
-.calendar-day[data-weekday="6"] .weekday-title::after {
-    background-image: url('../emojis/1f6e0.png');
 }
 
 .monthday-title {
@@ -107,25 +88,29 @@ html,body {
     font-weight: normal;
     font-family: emojis, Arial, sans-serif;
     font-size: 2em;
-    background-color: white;
+    /*background-color: white;*/
     width: 1.5em;
     height: 1.5em;
     border-radius: 10em;
     display: block;
     margin: 0.25em auto 0;
     line-height: 1.6em;
-    content: "";
+    /*content: "";*/
     background-position: center;
     background-size: 80%;
     background-repeat: no-repeat;
 }
 
 .weather-icons {
-    background-color: lightblue;
+    /* background-color: lightblue; */
     align-content: center;
-    align-items: center;
     display: flex;
-    height: 5em;
+    height: 8em;
+    border-bottom: 1px solid;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    border-top: 1px solid black;
 }
 
 .weather-icon {
@@ -134,19 +119,22 @@ html,body {
     background-size: contain;
     position: relative;
     transform: scale(3);
-    flex: 1 1 1em;
-    height: 50px;
+    flex: 0 0 1.25em;
+    height: 70px;
 }
 
 .weather-temp {
-    position: relative;
+    position: absolute;
     text-align: center;
     font-weight: bold;
     font-size: 1.5em;
-    top: 0.25em;
     width: 100%;
     z-index: 1;
-    height: 0;
+    height: 1em;
+    color: white;
+    margin-top: 1em;
+    width: 100%;
+    bottom: 1.5em;
 }
 
 .event-icons {
@@ -166,6 +154,7 @@ html,body {
     text-align: center;
     display: flex;
     align-items: center;
+    justify-content: center;
 }
 
 .event-icon img {
@@ -173,4 +162,11 @@ html,body {
     object-fit: contain;
     width: 25%;
     margin: 0 0.1em;
+    max-width: 70%;
+}
+
+.weekday-image {
+    width: 75%;
+    margin: 0 auto;
+    display: block;
 }
