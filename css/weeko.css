@@ -170,3 +170,10 @@ html,body {
     margin: 0 auto;
     display: block;
 }
+
+.event-description {
+    margin-bottom: 0.5em;
+    font-weight: bold;
+    color: white;
+    font-size: 0.8em;
+}

@@ -22,7 +22,10 @@ var Weeko = function (window, moment) {
 
         content += '<div class="event-icons">';
         day.events.forEach(function (ev) {
-            content += '<div class="event-icon">' + ev + '</div>';
+            content += '<div class="event-icon">' + ev.icons + '</div>';
+            if (ev.description) {
+                content += '<div class="event-description">' + ev.description + '</div>'
+            }
         });
         content += '</div>';
 
@@ -108,7 +111,7 @@ var Weeko = function (window, moment) {
 
                 return datum.diff(start) >= 0 && datum.diff(end) <= 0;
             }).forEach(function (e) {
-                day.events.push(translateSummary(e.summary));
+                day.events.push({icons: translateSummary(e.summary), description: e.description});
             });
 
             resolve(day);
