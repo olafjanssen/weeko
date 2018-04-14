@@ -41,8 +41,8 @@ var Weeko = function (window, moment) {
 
             // get hour
             var semiHourOffset = moment().minutes() > 15 && moment().minutes() < 45 ? 12 : 0;
-            var hourIndex = (moment().add(15, 'minutes').startOf('hour').hours() + 1) % 12 - 2 + semiHourOffset;
-
+            var hourIndex = (moment().add(15, 'minutes').startOf('hour').hours()) % 12 - 1 + semiHourOffset;
+            console.log(semiHourOffset, hourIndex, timeImg[hourIndex]);
             content += '<div class="today-message"><img src="emojis/' + timeImg[hourIndex] + '.png"</div>';
 
             requestAnimationFrame(function () {
