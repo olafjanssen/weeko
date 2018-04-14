@@ -36,16 +36,22 @@ var Weeko = function (window, moment) {
         });
         content += '</div>';
 
-
-        el.innerHTML = content;
-        element.appendChild(el);
-
         if (day.datum.diff(moment().startOf('day')) === 0) {
             el.classList.add('today');
+
+            // get hour
+            var semiHourOffset = moment().minutes() > 15 && moment().minutes() < 45 ? 12 : 0;
+            var hourIndex = (moment().add(15, 'minutes').startOf('hour').hours() + 1) % 12 - 2 + semiHourOffset;
+
+            content += '<div class="today-message"><img src="emojis/' + timeImg[hourIndex] + '.png"</div>';
+
             requestAnimationFrame(function () {
                 element.parentElement.scrollLeft = el.getBoundingClientRect().left;
             });
         }
+
+        el.innerHTML = content;
+        element.appendChild(el);
     }
 
     function ucs2decode(string) {
@@ -120,23 +126,33 @@ var Weeko = function (window, moment) {
 
     function loadJSON(path) {
         return new Promise(function (resolve, reject) {
-            // if (localStorage.getItem('weather')) {
-            //     resolve(JSON.parse(localStorage.getItem('weather')));
-            // } else {
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        // localStorage.setItem('weather', xhr.responseText);
-                        resolve(JSON.parse(xhr.responseText));
-                    } else {
-                        reject(xhr);
+            var fromStorage = false;
+            try {
+                fromStorage = localStorage.getItem('weather') && moment.duration(moment(JSON.parse(localStorage.getItem('weather')).dateTime).diff(moment())).hours() < 3
+            } catch (e) {
+                fromStorage = false;
+            }
+
+            if (fromStorage) {
+                resolve(JSON.parse(JSON.parse(localStorage.getItem('weather')).rawData));
+            } else {
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            localStorage.setItem('weather', JSON.stringify({
+                                dateTime: new Date(),
+                                rawData: xhr.responseText
+                            }));
+                            resolve(JSON.parse(xhr.responseText));
+                        } else {
+                            reject(xhr);
+                        }
                     }
-                }
-            };
-            xhr.open("GET", path, true);
-            xhr.send();
-            // }
+                };
+                xhr.open("GET", path, true);
+                xhr.send();
+            }
         });
     }
 
@@ -161,7 +177,14 @@ var Weeko = function (window, moment) {
                 datum = moment(datum).add(1, 'day');
             }
         });
+
+        // set auto-refresh
+        setTimeout(function () {
+            window.location.reload();
+        }, 1000 * 60 * 5);
     }
+
+    var timeImg = ["1f550", "1f551", "1f552", "1f553", "1f554", "1f555", "1f556", "1f557", "1f558", "1f559", "1f55a", "1f55b", "1f55c", "1f55d", "1f55e", "1f55f", "1f560", "1f561", "1f562", "1f563", "1f564", "1f565", "1f566", "1f567"];
 
     var weekdayImg = ['1f31c', '1f996', '1f436', '26a1', '1f46b', '1f6e0', '1f31e'];
 
