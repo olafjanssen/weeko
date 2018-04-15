@@ -120,7 +120,7 @@ html, body {
     background-size: contain;
     position: relative;
     transform: scale(3);
-    flex: 0 0 1.25em;
+    flex: 1 1 1.25em;
     height: 70px;
 }
 
@@ -190,9 +190,9 @@ html, body {
 
 .alarm-overlay {
     pointer-events: none;
-    position: absolute;
-    height: 100%;
-    width: 100%;
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
     z-index: 1;
     left: 0;
     top: 0;

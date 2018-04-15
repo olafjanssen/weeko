@@ -7,12 +7,11 @@ var AlarmOverlay = (function (window, moment) {
     var element = document.createElement('div');
 
     function setState(date) {
-        var isWeekend = date.weekday() === 0 || date.weekday() === 6;
         var hours = date.hours();
 
         element.setAttribute('class', 'alarm-overlay');
-        if (isWeekend) {
-            if (hours < 7 || hours >= 22) {
+        if (date.weekday() === 0 || date.weekday() === 6) {
+            if (hours < 7 || hours>=21) {
                 element.classList.add('sleep');
             } else if (hours < 9) {
                 element.classList.add('hush');
@@ -20,7 +19,7 @@ var AlarmOverlay = (function (window, moment) {
                 element.classList.add('read');
             }
         } else {
-            if (hours < 6 || hours >= 21) {
+            if (hours < 6 || hours>=21) {
                 element.classList.add('sleep');
             } else if (hours < 7) {
                 element.classList.add('hush');
@@ -28,6 +27,7 @@ var AlarmOverlay = (function (window, moment) {
                 element.classList.add('read');
             }
         }
+
     }
 
     function init() {

@@ -132,7 +132,7 @@ var Weeko = function (window, moment) {
         return new Promise(function (resolve, reject) {
             var fromStorage = false, weatherData;
             try {
-                fromStorage = localStorage.getItem('weather') && moment.duration(moment(JSON.parse(localStorage.getItem('weather')).dateTime).diff(moment())).hours() < 3
+                fromStorage = localStorage.getItem('weather') && moment.duration(moment().diff(moment(JSON.parse(localStorage.getItem('weather')).dateTime))).hours() < 3;
                 weatherData = JSON.parse(JSON.parse(localStorage.getItem('weather')).rawData);
             } catch (e) {
                 fromStorage = false;

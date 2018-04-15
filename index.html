@@ -21,6 +21,8 @@
 <button id="authorize-button" style="display: none;">Authorize</button>
 <button id="signout-button" style="display: none;">Sign Out</button>
 
+<div id="scroll-pusher"></div>
+
 <script src="js/weeko.js"></script>
 <script src="js/alarmoverlay.js"></script>
 <script type="text/javascript">
@@ -99,7 +101,7 @@
 
     setInterval(function(){
         window.scrollTo(0,100);
-    },1000);
+    },10000);
 
 </script>
 <script async defer src="https://apis.google.com/js/api.js" onload="this.onload=function(){};handleClientLoad()" onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
