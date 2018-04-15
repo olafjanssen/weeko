@@ -5,7 +5,6 @@
     <title>Title</title>
 
     <script src="node_modules/moment/min/moment-with-locales.min.js"></script>
-    <script src="js/punycode.js"></script>
     <link rel="stylesheet" href="css/weeko.css">
 
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0" />
@@ -14,6 +13,7 @@
 </head>
 
 <body>
+<div id="scroll-pusher"></div>
 <div id="scroll-container">
     <section id="calendar"></section>
 </div>
@@ -21,6 +21,8 @@
 <button id="authorize-button" style="display: none;">Authorize</button>
 <button id="signout-button" style="display: none;">Sign Out</button>
 
+<script src="js/weeko.js"></script>
+<script src="js/alarmoverlay.js"></script>
 <script type="text/javascript">
     // Client ID and API key from the Developer Console
     var CLIENT_ID = '675383632896-j0ors8fqs08iiuvr3hl4mi2hdqqcjto8.apps.googleusercontent.com';
@@ -95,12 +97,12 @@
         gapi.auth2.getAuthInstance().signOut();
     }
 
+    setInterval(function(){
+        window.scrollTo(0,100);
+    },1000);
 
 </script>
-
 <script async defer src="https://apis.google.com/js/api.js" onload="this.onload=function(){};handleClientLoad()" onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
 
 </body>
-<script src="js/weeko.js"></script>
-<script src="js/alarmoverlay.js"></script>
 </html>

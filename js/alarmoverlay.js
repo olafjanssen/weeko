@@ -7,8 +7,8 @@ var AlarmOverlay = (function (window, moment) {
     var element = document.createElement('div');
 
     function setState(date) {
-        var isWeekend = date.weekday === 0 || date.weekday === 6;
-        var hours = date.getHours();
+        var isWeekend = date.weekday() === 0 || date.weekday() === 6;
+        var hours = date.hours();
 
         element.setAttribute('class', 'alarm-overlay');
         if (isWeekend) {

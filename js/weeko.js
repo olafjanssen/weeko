@@ -41,12 +41,13 @@ var Weeko = function (window, moment) {
 
             // get hour
             var semiHourOffset = moment().minutes() > 15 && moment().minutes() < 45 ? 12 : 0;
-            var hourIndex = (moment().add(15, 'minutes').startOf('hour').hours()) % 12 - 1 + semiHourOffset;
+            var modHour = (moment().add(15, 'minutes').startOf('hour').hours()) % 12;
+            var hourIndex = (modHour === 0 ? 12 : modHour) - 1 + semiHourOffset;
             console.log(semiHourOffset, hourIndex, timeImg[hourIndex]);
             content += '<div class="today-message"><img src="emojis/' + timeImg[hourIndex] + '.png"</div>';
 
             requestAnimationFrame(function () {
-                    element.parentElement.scrollLeft += el.getBoundingClientRect().left;
+                element.parentElement.scrollLeft += el.getBoundingClientRect().left;
             });
         }
 
@@ -81,16 +82,19 @@ var Weeko = function (window, moment) {
 
     function translateSummary(summary) {
         var output = '';
-        var characters = ucs2decode(summary);
 
-        characters.forEach(function (c) {
-            if (emojiKeys[c.toString(16)]) {
-                output += '<img src="emojis/' + c.toString(16) + '.png">';
-            } else {
-                output += String.fromCodePoint(c);
-            }
-        });
-
+        if (summary.substr(0, 4) === 'http') {
+            output += '<img src="' + summary + '">';
+        } else {
+            var characters = ucs2decode(summary);
+            characters.forEach(function (c) {
+                if (emojiKeys[c.toString(16)]) {
+                    output += '<img src="emojis/' + c.toString(16) + '.png">';
+                } else {
+                    output += String.fromCodePoint(c);
+                }
+            });
+        }
         return output;
     }
 
@@ -117,7 +121,7 @@ var Weeko = function (window, moment) {
 
                 return datum.diff(start) >= 0 && datum.diff(end) <= 0;
             }).forEach(function (e) {
-                day.events.push({icons: translateSummary(e.summary), description: e.description});
+                day.events.push({icons: translateSummary(e.description), description: e.summary});
             });
 
             resolve(day);
@@ -126,15 +130,16 @@ var Weeko = function (window, moment) {
 
     function loadJSON(path) {
         return new Promise(function (resolve, reject) {
-            var fromStorage = false;
+            var fromStorage = false, weatherData;
             try {
                 fromStorage = localStorage.getItem('weather') && moment.duration(moment(JSON.parse(localStorage.getItem('weather')).dateTime).diff(moment())).hours() < 3
+                weatherData = JSON.parse(JSON.parse(localStorage.getItem('weather')).rawData);
             } catch (e) {
                 fromStorage = false;
             }
 
             if (fromStorage) {
-                resolve(JSON.parse(JSON.parse(localStorage.getItem('weather')).rawData));
+                resolve(weatherData);
             } else {
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function () {
@@ -164,20 +169,20 @@ var Weeko = function (window, moment) {
     function listUpcomingEvents() {
         gapi.client.calendar.events.list({
             'calendarId': '9brfvbpc0vmifsudg7ggmnhh2c@group.calendar.google.com',
-            'timeMin': (moment().subtract(10,'days')).toISOString(),
-            'timeMax': (moment().add(365,'days')).toISOString(),
+            'timeMin': (moment().subtract(10, 'days')).toISOString(),
+            'timeMax': (moment().add(365, 'days')).toISOString(),
             'showDeleted': false,
             'singleEvents': true,
             'maxResults': 100,
             'orderBy': 'startTime'
-        }).then(function(response) {
-            var events = response.result.items;
-            console.log(events);
-            loadRest(events);
+        }).then(function (response) {
+            var list = response.result.items;
+            console.log(list);
+            loadRest(list);
         });
     }
 
-    function loadRest(es){
+    function loadRest(es) {
         loadJSON('http://api.openweathermap.org/data/2.5/forecast?q=Geldrop,NL&appid=35a91f92624095eff547f4c8fdf15807').then(function (w) {
             weather = w;
             events = es;
