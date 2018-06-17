@@ -4,6 +4,12 @@
 var Weeko = function (window, moment) {
     'use strict';
 
+    var settings = {
+        daysAhead: 31,
+        daysBack: 10
+    };
+
+
     var element;
     var weather;
     var events;
@@ -169,8 +175,8 @@ var Weeko = function (window, moment) {
     function listUpcomingEvents() {
         gapi.client.calendar.events.list({
             'calendarId': '9brfvbpc0vmifsudg7ggmnhh2c@group.calendar.google.com',
-            'timeMin': (moment().subtract(10, 'days')).toISOString(),
-            'timeMax': (moment().add(365, 'days')).toISOString(),
+            'timeMin': (moment().subtract(settings.daysBack, 'days')).toISOString(),
+            'timeMax': (moment().add(settings.daysAhead, 'days')).toISOString(),
             'showDeleted': false,
             'singleEvents': true,
             'maxResults': 100,
@@ -188,8 +194,8 @@ var Weeko = function (window, moment) {
             events = es;
 
             // get a series of dates
-            var startDate = moment().startOf('day').subtract(10, 'days'),
-                endDate = moment().startOf('day').add(31, 'days');
+            var startDate = moment().startOf('day').subtract(settings.daysBack, 'days'),
+                endDate = moment().startOf('day').add(settings.daysAhead, 'days');
 
             element.innerHTML = '';
 
@@ -206,7 +212,13 @@ var Weeko = function (window, moment) {
 
     }
 
-    function init(selector, es) {
+    function init(selector, options) {
+        if (options) {
+            if (options.daysAhead) {
+                settings.daysAhead = options.daysAhead;
+            }
+        }
+
         element = window.document.querySelector(selector);
 
         listUpcomingEvents();

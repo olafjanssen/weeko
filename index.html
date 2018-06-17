@@ -78,7 +78,7 @@
             authorizeButton.style.display = 'none';
             // signoutButton.style.display = 'block';
             //listUpcomingEvents();
-            Weeko.init('#calendar');
+            Weeko.init('#calendar', {daysAhead: 120});
         } else {
             authorizeButton.style.display = 'block';
             signoutButton.style.display = 'none';
