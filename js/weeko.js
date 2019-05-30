@@ -88,14 +88,20 @@ var Weeko = function (window, moment) {
 
     function translateSummary(summary) {
         var output = '';
-
+        if (!summary) {
+            return "";
+        }
         if (summary.substr(0, 4) === 'http') {
             output += '<img src="' + summary + '">';
         } else {
             var characters = ucs2decode(summary);
             characters.forEach(function (c) {
-                if (emojiKeys[c.toString(16)]) {
-                    output += '<img src="emojis/' + c.toString(16) + '.png">';
+                var hexchar = c.toString(16);
+                if (emojiKeys[hexchar]) {
+                    // ignore gender-only emojis
+                    if (hexchar !== "2640" && hexchar !== "2642") {
+                        output += '<img src="emojis/' + hexchar + '.png">';
+                    }
                 } else {
                     output += String.fromCodePoint(c);
                 }
