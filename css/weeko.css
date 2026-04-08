@@ -1,9 +1,10 @@
 @font-face {
     font-family: "emojis";
-    src: url("../fonts/emojione-svg.otf") format('opentype');
+    src: url("../fonts/emojione-svg.otf") format("opentype");
 }
 
-html, body {
+html,
+body {
     background-color: black;
     margin: 0;
     padding: 0;
@@ -167,7 +168,7 @@ html, body {
 }
 
 .weekday-image {
-    width: 75%;
+    width: 50%;
     margin: 0 auto;
     display: block;
 }
@@ -210,7 +211,7 @@ html, body {
 }
 
 .alarm-overlay.sleep {
-    background-color: rgba(0,0,0,0.9);
+    background-color: rgba(0, 0, 0, 0.9);
 }
 
 .alarm-overlay.sleep div {
@@ -219,7 +220,7 @@ html, body {
 }
 
 .alarm-overlay.hush {
-    background-color: rgba(0,150,0,0.5);
+    background-color: rgba(0, 150, 0, 0.5);
 }
 
 .alarm-overlay.hush div {
@@ -228,7 +229,7 @@ html, body {
 }
 
 .alarm-overlay.read {
-    background-color: rgba(100,0,0,0.5);
+    background-color: rgba(100, 0, 0, 0.5);
 }
 
 .alarm-overlay.read div {

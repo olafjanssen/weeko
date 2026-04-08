@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Weeko</title>
 
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/localeData.min.js"></script>
@@ -27,118 +27,68 @@
     <section id="calendar"></section>
 </div>
 
-<button id="authorize-button">Authorize</button>
-<button id="signout-button" style="display: none;">Sign Out</button>
-
 <div id="scroll-pusher"></div>
 
 <script src="js/weeko.js"></script>
 <script src="js/alarmoverlay.js"></script>
 <script type="text/javascript">
-    // Client ID and API key from the Developer Console
-    var CLIENT_ID = '675383632896-j0ors8fqs08iiuvr3hl4mi2hdqqcjto8.apps.googleusercontent.com';
+    // API key for public calendar access
     var API_KEY = 'AIzaSyCs_q7BXvg8NgUwH1OFjmSrwLMwxdvORBI';
 
-    // Array of API discovery doc URLs for APIs used by the quickstart
+    // Google Calendar API discovery document
     var DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
 
-    // Authorization scopes required by the API; multiple scopes can be
-    // included, separated by spaces.
-    var SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
-
-    var authorizeButton = document.getElementById('authorize-button');
-    var signoutButton = document.getElementById('signout-button');
-    var GoogleAuth;
+    // Your public calendar ID
+    var CALENDAR_ID = '9brfvbpc0vmifsudg7ggmnhh2c@group.calendar.google.com';
 
     /**
-     *  On load, called to load the auth2 library and API client library.
+     *  Initialize the app using API key only (no OAuth needed)
      */
     function handleClientLoad() {
-        console.log('Google API client script loaded, initializing...');
-        if (typeof gapi !== 'undefined') {
-            gapi.load('client:auth2', initClient);
-        } else {
-            console.error('Google API (gapi) is not available');
-            document.getElementById('authorize-button').style.display = 'block';
-        }
-    }
-
-    /**
-     *  Initializes the API client library and sets up sign-in state
-     *  listeners.
-     */
-    function initClient() {
-        console.log('init client');
+        console.log('Initializing with API key only...');
+        
+        // Load Google API client without auth
         gapi.client.init({
             apiKey: API_KEY,
-            clientId: CLIENT_ID,
-            discoveryDocs: DISCOVERY_DOCS,
-            scope: SCOPES
+            discoveryDocs: DISCOVERY_DOCS
+            // No clientId or scope needed for public calendars
         }).then(function () {
-            console.log('loaded');
-
-            GoogleAuth = gapi.auth2.getAuthInstance();
-            GoogleAuth.isSignedIn.listen(updateSigninStatus);
-
-            // // Listen for sign-in state changes.
-            // gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-
-            // Handle the initial sign-in state.
-            updateSigninStatus(GoogleAuth.isSignedIn.get());
-            authorizeButton.onclick = handleAuthClick;
-            signoutButton.onclick = handleSignoutClick;
+            console.log('Google API loaded - fetching public calendar data');
+            
+            // Initialize Weeko with public calendar
+            Weeko.init('#calendar', {daysAhead: 120});
+            
+        }).catch(function(error) {
+            console.error('Error loading Google API:', error);
+            alert('Error loading calendar. Check console for details.');
         });
     }
 
-    /**
-     *  Called when the signed in status changes, to update the UI
-     *  appropriately. After a sign-in, the API is called.
-     */
-    function updateSigninStatus(isSignedIn) {
-        if (isSignedIn) {
-            authorizeButton.style.display = 'none';
-            // signoutButton.style.display = 'block';
-            //listUpcomingEvents();
-            Weeko.init('#calendar', {daysAhead: 120});
-        } else {
-            authorizeButton.style.display = 'block';
-            signoutButton.style.display = 'none';
-        }
-    }
-
-    /**
-     *  Sign in the user upon button click.
-     */
-    function handleAuthClick(event) {
-        gapi.auth2.getAuthInstance().signIn();
-    }
-
-    /**
-     *  Sign out the user upon button click.
-     */
-    function handleSignoutClick(event) {
-        gapi.auth2.getAuthInstance().signOut();
-    }
-
-    setInterval(function(){
-        window.scrollTo(0,100);
-    },10000);
-
-    // Fallback if Google API doesn't load within 5 seconds
-    setTimeout(function() {
-        if (typeof GoogleAuth === 'undefined') {
-            console.warn('Google API did not load within 5 seconds, showing authorize button');
-            document.getElementById('authorize-button').style.display = 'block';
-            document.getElementById('authorize-button').onclick = function() {
-                alert('Google API failed to load. Please check your internet connection and try refreshing the page.');
-            };
-        }
-    }, 5000);
-
 </script>
-<script src="https://apis.google.com/js/api.js" onload="this.onload=function(){};handleClientLoad()" onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
-
-<!--<script async defer nonce="startitupnow123" src="https://apis.google.com/js/api.js" onload="this.onload=function(){};handleClientLoad()" onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>-->
+<script>
+    // Load Google API script and wait for it to be ready
+    function loadGoogleApi() {
+        const script = document.createElement('script');
+        script.src = 'https://apis.google.com/js/api.js';
+        script.onload = function() {
+            // Make sure gapi is available
+            if (typeof gapi !== 'undefined') {
+                gapi.load('client', handleClientLoad);
+            } else {
+                console.error('Google API failed to load');
+                alert('Failed to load Google API. Check internet connection.');
+            }
+        };
+        script.onerror = function() {
+            console.error('Failed to load Google API script');
+            alert('Failed to load Google API. Check internet connection.');
+        };
+        document.head.appendChild(script);
+    }
+    
+    // Start loading when DOM is ready
+    document.addEventListener('DOMContentLoaded', loadGoogleApi);
+</script>
 
 </body>
 </html>
