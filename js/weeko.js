@@ -178,9 +178,60 @@ var Weeko = function (window, dayjs) {
      * the authorized user's calendar. If no events are found an
      * appropriate message is printed.
      */
+    // Track retry attempts to avoid spam
+    var retryCount = 0;
+    var maxRetries = 10;
+    
     function listUpcomingEvents() {
+        // Check if gapi.client.calendar is available
+        if (typeof gapi.client.calendar === 'undefined') {
+            retryCount++;
+            if (retryCount <= maxRetries) {
+                if (retryCount === 1) {
+                    console.log('Google Calendar API not loaded yet, retrying...');
+                }
+                setTimeout(listUpcomingEvents, 1000); // Try again in 1 second
+            } else {
+                console.error('Google Calendar API failed to load after ' + maxRetries + ' attempts');
+                if (typeof showStatus !== 'undefined') {
+                    showStatus('Google Calendar API failed to load. Check internet connection.', 'error');
+                }
+            }
+            return;
+        }
+        
+        // Reset retry counter
+        retryCount = 0;
+        
+        // Get calendar ID - try config first, then localStorage, then default
+        var calendarId;
+        if (typeof getCurrentCalendarId === 'function') {
+            calendarId = getCurrentCalendarId();
+        }
+        
+        // If no config function or no ID from config, try localStorage
+        if (!calendarId) {
+            try {
+                calendarId = localStorage.getItem('weekoCalendarId');
+            } catch (e) {
+                console.warn('Could not access localStorage:', e);
+            }
+        }
+        
+        // Fallback to default
+        calendarId = calendarId || '9brfvbpc0vmifsudg7ggmnhh2c@group.calendar.google.com';
+        
+        // Validate calendar ID format
+        if (!calendarId.includes('@')) {
+            calendarId += '@group.calendar.google.com';
+        }
+        
+        console.log('Using calendar ID:', calendarId);
+        
+        console.log('Fetching events for calendar:', calendarId);
+        
         gapi.client.calendar.events.list({
-            'calendarId': '9brfvbpc0vmifsudg7ggmnhh2c@group.calendar.google.com',
+            'calendarId': calendarId,
             'timeMin': (dayjs().subtract(settings.daysBack, 'days')).toISOString(),
             'timeMax': (dayjs().add(settings.daysAhead, 'days')).toISOString(),
             'showDeleted': false,
@@ -189,8 +240,24 @@ var Weeko = function (window, dayjs) {
             'orderBy': 'startTime'
         }).then(function (response) {
             var list = response.result.items;
-            console.log(list);
+            console.log('Loaded', list.length, 'events');
             loadRest(list);
+            
+            // Hide loading indicator if it exists
+            if (typeof hideLoadingIndicator === 'function') {
+                hideLoadingIndicator();
+            }
+        }).catch(function(error) {
+            console.error('Error fetching events:', error);
+            // Show error in UI if possible
+            if (typeof showStatus !== 'undefined') {
+                showStatus('Error loading calendar events: ' + error.message, 'error');
+            }
+            
+            // Hide loading indicator on error too
+            if (typeof hideLoadingIndicator === 'function') {
+                hideLoadingIndicator();
+            }
         });
     }
 

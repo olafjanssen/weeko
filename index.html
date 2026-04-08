@@ -1,94 +1,421 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Weeko</title>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Weeko</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/localeData.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/localizedFormat.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/locale/nl.min.js"></script>
-    <script>
-        // Initialize Day.js plugins
-        dayjs.extend(window.dayjs_plugin_localeData);
-        dayjs.extend(window.dayjs_plugin_localizedFormat);
-        dayjs.locale('nl');
-    </script>
-    <link rel="stylesheet" href="css/weeko.css">
+        <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/localeData.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/localizedFormat.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/dayjs@1/locale/nl.min.js"></script>
+        <script>
+            // Initialize Day.js plugins
+            dayjs.extend(window.dayjs_plugin_localeData);
+            dayjs.extend(window.dayjs_plugin_localizedFormat);
+            dayjs.locale("nl");
+        </script>
+        <link rel="stylesheet" href="css/weeko.css" />
 
-    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-</head>
-
-<body>
-<div id="scroll-pusher"></div>
-<div id="scroll-container">
-    <section id="calendar"></section>
-</div>
-
-<div id="scroll-pusher"></div>
-
-<script src="js/weeko.js"></script>
-<script src="js/alarmoverlay.js"></script>
-<script type="text/javascript">
-    // API key for public calendar access
-    var API_KEY = 'AIzaSyCs_q7BXvg8NgUwH1OFjmSrwLMwxdvORBI';
-
-    // Google Calendar API discovery document
-    var DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
-
-    // Your public calendar ID
-    var CALENDAR_ID = '9brfvbpc0vmifsudg7ggmnhh2c@group.calendar.google.com';
-
-    /**
-     *  Initialize the app using API key only (no OAuth needed)
-     */
-    function handleClientLoad() {
-        console.log('Initializing with API key only...');
-        
-        // Load Google API client without auth
-        gapi.client.init({
-            apiKey: API_KEY,
-            discoveryDocs: DISCOVERY_DOCS
-            // No clientId or scope needed for public calendars
-        }).then(function () {
-            console.log('Google API loaded - fetching public calendar data');
-            
-            // Initialize Weeko with public calendar
-            Weeko.init('#calendar', {daysAhead: 120});
-            
-        }).catch(function(error) {
-            console.error('Error loading Google API:', error);
-            alert('Error loading calendar. Check console for details.');
-        });
-    }
-
-</script>
-<script>
-    // Load Google API script and wait for it to be ready
-    function loadGoogleApi() {
-        const script = document.createElement('script');
-        script.src = 'https://apis.google.com/js/api.js';
-        script.onload = function() {
-            // Make sure gapi is available
-            if (typeof gapi !== 'undefined') {
-                gapi.load('client', handleClientLoad);
-            } else {
-                console.error('Google API failed to load');
-                alert('Failed to load Google API. Check internet connection.');
+        <meta
+            name="viewport"
+            content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"
+        />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+        <style>
+            .setup-container {
+                padding: 20px;
+                background: #f5f5f5;
+                border-radius: 8px;
+                margin: 20px auto;
+                max-width: 600px;
+                position: relative;
+                z-index: 10;
+                min-height: 200px;
             }
-        };
-        script.onerror = function() {
-            console.error('Failed to load Google API script');
-            alert('Failed to load Google API. Check internet connection.');
-        };
-        document.head.appendChild(script);
-    }
-    
-    // Start loading when DOM is ready
-    document.addEventListener('DOMContentLoaded', loadGoogleApi);
-</script>
+            .input-group {
+                margin: 15px 0;
+            }
+            input[type="text"] {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            button {
+                background: #4285f4;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 16px;
+            }
+            button:hover {
+                background: #3367d6;
+            }
+            .info {
+                background: #e8f0fe;
+                padding: 15px;
+                border-radius: 4px;
+                margin: 15px 0;
+            }
+            .success {
+                background: #e6f4ea;
+                color: #2e7d32;
+                padding: 10px;
+            }
+            .error {
+                background: #ffebee;
+                color: #c62828;
+                padding: 10px;
+            }
+            .current-calendar {
+                font-size: 14px;
+                color: #666;
+                margin-top: 10px;
+            }
+            #loading-indicator {
+                display: none;
+                margin-top: 10px;
+                color: #666;
+            }
+        </style>
+    </head>
 
-</body>
+    <body>
+        <div id="setup-container" class="setup-container">
+            <h2>Weeko Calendar Setup</h2>
+
+            <div class="info">
+                <p><strong>How to use:</strong></p>
+                <ol>
+                    <li>
+                        Make your Google Calendar
+                        <strong>public</strong> (Settings → Access permissions)
+                    </li>
+                    <li>
+                        Get your calendar ID (format:
+                        <code>xxx@group.calendar.google.com</code>)
+                    </li>
+                    <li>Paste it below and click "Save & Load"</li>
+                </ol>
+                <p>
+                    Or paste a Google Calendar shareable link and the ID will be
+                    extracted automatically.
+                </p>
+            </div>
+
+            <div class="input-group">
+                <input
+                    type="text"
+                    id="calendar-input"
+                    placeholder="Paste calendar ID or shareable link here..."
+                    title="Example: your-calendar-id@group.calendar.google.com or full Google Calendar URL"
+                />
+            </div>
+
+            <div class="input-group">
+                <button onclick="saveCalendarId()">Save & Load Calendar</button>
+            </div>
+
+            <div id="status-message"></div>
+            <div id="current-calendar" class="current-calendar"></div>
+            <div id="loading-indicator">
+                Loading<span id="loading-dots">.</span
+                ><span id="loading-dots-animated">.</span
+                ><span id="loading-dots-animated2">.</span>
+            </div>
+        </div>
+
+        <div id="scroll-pusher"></div>
+        <div id="scroll-container">
+            <section id="calendar"></section>
+        </div>
+
+        <div id="scroll-pusher"></div>
+
+        <script src="js/weeko.js"></script>
+        <script src="js/alarmoverlay.js"></script>
+        <script type="text/javascript">
+            // API key for public calendar access
+            var API_KEY = "AIzaSyCs_q7BXvg8NgUwH1OFjmSrwLMwxdvORBI";
+
+            // Google Calendar API discovery document
+            var DISCOVERY_DOCS = [
+                "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
+            ];
+
+            // Calendar ID will be set by user
+            var CALENDAR_ID = "";
+
+            /**
+             * Extract calendar ID from various formats
+             */
+            function extractCalendarId(input) {
+                const trimmed = input.trim();
+
+                // Direct calendar ID format: xxx@group.calendar.google.com
+                if (trimmed.includes("@group.calendar.google.com")) {
+                    return trimmed;
+                }
+
+                // Google Calendar shareable link format
+                try {
+                    const url = new URL(trimmed);
+                    const cid = url.searchParams.get("cid");
+                    if (cid) {
+                        try {
+                            const decoded = atob(cid);
+                            return decoded.includes("@")
+                                ? decoded
+                                : decoded + "@group.calendar.google.com";
+                        } catch (e) {
+                            return cid.includes("@")
+                                ? cid
+                                : cid + "@group.calendar.google.com";
+                        }
+                    }
+                } catch (e) {
+                    return input.trim();
+                }
+
+                return trimmed.includes("@")
+                    ? trimmed
+                    : trimmed + "@group.calendar.google.com";
+            }
+
+            /**
+             * Save calendar ID to localStorage and reload calendar
+             */
+            function saveCalendarId() {
+                const input = document.getElementById("calendar-input");
+                const rawInput = input.value;
+
+                if (!rawInput) {
+                    showStatus(
+                        "Please enter a calendar ID or shareable link",
+                        "error",
+                    );
+                    return;
+                }
+
+                try {
+                    CALENDAR_ID = extractCalendarId(rawInput);
+
+                    // Save to localStorage
+                    localStorage.setItem("weekoCalendarId", CALENDAR_ID);
+
+                    // Update UI
+                    showStatus(
+                        "Calendar ID saved! Loading calendar...",
+                        "success",
+                    );
+                    updateCurrentCalendarDisplay();
+
+                    // Load the calendar
+                    loadGoogleApi();
+                } catch (error) {
+                    showStatus("Error: " + error.message, "error");
+                    console.error("Error extracting calendar ID:", error);
+                }
+            }
+
+            /**
+             * Show status message
+             */
+            function showStatus(message, type = "info") {
+                const statusElement = document.getElementById("status-message");
+                statusElement.textContent = message;
+                statusElement.className = type;
+            }
+
+            /**
+             * Update the current calendar display
+             */
+            function updateCurrentCalendarDisplay() {
+                const displayElement =
+                    document.getElementById("current-calendar");
+                if (CALENDAR_ID) {
+                    displayElement.innerHTML =
+                        "<strong>Current Calendar:</strong> " +
+                        CALENDAR_ID +
+                        ' | <a href="#" onclick="clearCalendarId()">Change</a>';
+                } else {
+                    displayElement.textContent = "No calendar selected";
+                }
+            }
+
+            /**
+             * Clear calendar ID from localStorage
+             */
+            function clearCalendarId() {
+                localStorage.removeItem("weekoCalendarId");
+                CALENDAR_ID = "";
+                document.getElementById("calendar-input").value = "";
+                showStatus(
+                    "Calendar cleared. Enter a new calendar ID.",
+                    "info",
+                );
+                updateCurrentCalendarDisplay();
+            }
+
+            /**
+             * Load calendar ID from localStorage on page load
+             */
+            function loadSavedCalendarId() {
+                try {
+                    const savedId = localStorage.getItem("weekoCalendarId");
+                    if (savedId) {
+                        CALENDAR_ID = savedId;
+                        document.getElementById("calendar-input").value =
+                            savedId;
+                        showStatus(
+                            "Loaded saved calendar: " + savedId,
+                            "success",
+                        );
+
+                        // Auto-load calendar
+                        setTimeout(loadGoogleApi, 500);
+                    } else {
+                        showStatus(
+                            "Enter your Google Calendar ID or shareable link above.",
+                            "info",
+                        );
+                    }
+                    updateCurrentCalendarDisplay();
+                } catch (error) {
+                    console.error("Error loading from localStorage:", error);
+                    showStatus(
+                        "Could not load saved calendar. Check browser settings.",
+                        "error",
+                    );
+                }
+            }
+
+            /**
+             * Load Google API and initialize calendar
+             */
+            function loadGoogleApi() {
+                if (!CALENDAR_ID) {
+                    showStatus("No calendar ID set", "error");
+                    return;
+                }
+
+                showLoadingIndicator();
+
+                const script = document.createElement("script");
+                script.src = "https://apis.google.com/js/api.js";
+                script.onload = function () {
+                    if (typeof gapi !== "undefined") {
+                        gapi.load("client", function () {
+                            handleClientLoad();
+                        });
+                    } else {
+                        console.error("Google API failed to load");
+                        showStatus("Failed to load Google API", "error");
+                        hideLoadingIndicator();
+                    }
+                };
+                script.onerror = function () {
+                    console.error("Failed to load Google API script");
+                    showStatus("Failed to load Google API script", "error");
+                    hideLoadingIndicator();
+                };
+                document.head.appendChild(script);
+            }
+
+            /**
+             * Show loading indicator
+             */
+            function showLoadingIndicator() {
+                const indicator = document.getElementById("loading-indicator");
+                if (indicator) {
+                    indicator.style.display = "block";
+                    animateLoadingDots();
+                }
+            }
+
+            /**
+             * Hide loading indicator
+             */
+            function hideLoadingIndicator() {
+                const indicator = document.getElementById("loading-indicator");
+                if (indicator) {
+                    indicator.style.display = "none";
+                }
+            }
+
+            /**
+             * Animate loading dots
+             */
+            function animateLoadingDots() {
+                const dots = [
+                    document.getElementById("loading-dots"),
+                    document.getElementById("loading-dots-animated"),
+                    document.getElementById("loading-dots-animated2"),
+                ];
+
+                let frame = 0;
+                const interval = setInterval(() => {
+                    frame = (frame + 1) % 4;
+
+                    // Simple animation: show/hide dots
+                    dots[0].style.opacity = frame >= 1 ? "1" : "0.3";
+                    dots[1].style.opacity = frame >= 2 ? "1" : "0.3";
+                    dots[2].style.opacity = frame >= 3 ? "1" : "0.3";
+                }, 200);
+
+                // Store interval to clear later
+                window.loadingInterval = interval;
+            }
+
+            /**
+             * Initialize the app using API key only (no OAuth needed)
+             */
+            function handleClientLoad() {
+                if (!CALENDAR_ID) {
+                    console.warn("No calendar ID set");
+                    showStatus(
+                        "Please enter your Google Calendar ID above.",
+                        "error",
+                    );
+                    hideLoadingIndicator();
+                    return;
+                }
+
+                console.log("Initializing with API key only...");
+
+                // Load Google API client without auth
+                gapi.client
+                    .init({
+                        apiKey: API_KEY,
+                        discoveryDocs: DISCOVERY_DOCS,
+                    })
+                    .then(function () {
+                        console.log(
+                            "Google API loaded - fetching public calendar data for:",
+                            CALENDAR_ID,
+                        );
+
+                        // Initialize Weeko with public calendar
+                        Weeko.init("#calendar", { daysAhead: 120 });
+                        hideLoadingIndicator();
+                    })
+                    .catch(function (error) {
+                        console.error("Error loading Google API:", error);
+                        showStatus(
+                            "Error loading calendar. Check console for details.",
+                            "error",
+                        );
+                        hideLoadingIndicator();
+                    });
+            }
+
+            // Load saved calendar ID when page loads
+            document.addEventListener("DOMContentLoaded", loadSavedCalendarId);
+        </script>
+        <script src="https://apis.google.com/js/api.js"></script>
+    </body>
 </html>
