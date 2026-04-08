@@ -120,7 +120,7 @@ body {
     background-repeat: no-repeat;
     background-size: contain;
     position: relative;
-    transform: scale(3);
+    transform: scale(1.5);
     flex: 1 1 1.25em;
     height: 70px;
 }

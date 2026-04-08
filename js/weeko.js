@@ -46,7 +46,7 @@ var Weeko = function (window, dayjs) {
             el.classList.add('today');
 
             // get hour
-            var semiHourOffset = dayjs().minutes() > 15 && dayjs().minutes() < 45 ? 12 : 0;
+            var semiHourOffset = dayjs().minute() > 15 && dayjs().minute() < 45 ? 12 : 0;
             var modHour = (dayjs().add(15, 'minutes').startOf('hour').hour()) % 12;
             var hourIndex = (modHour === 0 ? 12 : modHour) - 1 + semiHourOffset;
             console.log(semiHourOffset, hourIndex, timeImg[hourIndex]);
@@ -234,6 +234,47 @@ var Weeko = function (window, dayjs) {
             //window.location.reload();
             listUpcomingEvents();
         }, 1000 * 60 * 60);
+
+        // Auto-scroll to today after a delay to allow rendering
+        setTimeout(function() {
+            scrollToToday();
+        }, 2000);
+    }
+
+    /**
+     * Scroll to today's date in the calendar
+     */
+    function scrollToToday() {
+        try {
+            // Find the element with today class
+            var todayElement = document.querySelector('.calendar-day.today');
+            
+            if (todayElement) {
+                // Scroll to the today element with smooth animation
+                todayElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                console.log('✓ Scrolled to today');
+            } else {
+                console.warn('⚠ Could not find today element for scrolling');
+                // Debug: log all calendar-day elements
+                var allDays = document.querySelectorAll('.calendar-day');
+                console.log('Found', allDays.length, 'calendar days');
+                
+                // Try alternative selectors
+                var altToday = document.querySelector('[data-weekday="' + dayjs().day() + '"]');
+                if (altToday) {
+                    console.log('Found today via weekday attribute, scrolling...');
+                    altToday.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('✗ Error scrolling to today:', error);
+        }
     }
 
     var timeImg = ["1f550", "1f551", "1f552", "1f553", "1f554", "1f555", "1f556", "1f557", "1f558", "1f559", "1f55a", "1f55b", "1f55c", "1f55d", "1f55e", "1f55f", "1f560", "1f561", "1f562", "1f563", "1f564", "1f565", "1f566", "1f567"];
