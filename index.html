@@ -4,7 +4,16 @@
     <meta charset="UTF-8">
     <title>Title</title>
 
-    <script src="node_modules/moment/min/moment-with-locales.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/localeData.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/localizedFormat.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/locale/nl.min.js"></script>
+    <script>
+        // Initialize Day.js plugins
+        dayjs.extend(window.dayjs_plugin_localeData);
+        dayjs.extend(window.dayjs_plugin_localizedFormat);
+        dayjs.locale('nl');
+    </script>
     <link rel="stylesheet" href="css/weeko.css">
 
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0" />
@@ -18,7 +27,7 @@
     <section id="calendar"></section>
 </div>
 
-<button id="authorize-button" style="display: none;">Authorize</button>
+<button id="authorize-button">Authorize</button>
 <button id="signout-button" style="display: none;">Sign Out</button>
 
 <div id="scroll-pusher"></div>
@@ -45,7 +54,13 @@
      *  On load, called to load the auth2 library and API client library.
      */
     function handleClientLoad() {
-        gapi.load('client:auth2', initClient);
+        console.log('Google API client script loaded, initializing...');
+        if (typeof gapi !== 'undefined') {
+            gapi.load('client:auth2', initClient);
+        } else {
+            console.error('Google API (gapi) is not available');
+            document.getElementById('authorize-button').style.display = 'block';
+        }
     }
 
     /**
@@ -109,8 +124,19 @@
         window.scrollTo(0,100);
     },10000);
 
+    // Fallback if Google API doesn't load within 5 seconds
+    setTimeout(function() {
+        if (typeof GoogleAuth === 'undefined') {
+            console.warn('Google API did not load within 5 seconds, showing authorize button');
+            document.getElementById('authorize-button').style.display = 'block';
+            document.getElementById('authorize-button').onclick = function() {
+                alert('Google API failed to load. Please check your internet connection and try refreshing the page.');
+            };
+        }
+    }, 5000);
+
 </script>
-<script async defer src="https://apis.google.com/js/api.js" onload="this.onload=function(){};handleClientLoad()" onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
+<script src="https://apis.google.com/js/api.js" onload="this.onload=function(){};handleClientLoad()" onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>
 
 <!--<script async defer nonce="startitupnow123" src="https://apis.google.com/js/api.js" onload="this.onload=function(){};handleClientLoad()" onreadystatechange="if (this.readyState === 'complete') this.onload()"></script>-->
 

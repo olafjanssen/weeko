@@ -1,7 +1,7 @@
 'use strict';
 
-/* global window, moment */
-var Weeko = function (window, moment) {
+/* global window, dayjs */
+var Weeko = function (window, dayjs) {
     'use strict';
 
     var settings = {
@@ -18,13 +18,13 @@ var Weeko = function (window, moment) {
         var el = document.createElement('div');
         el.classList.add('calendar-day');
 
-        el.setAttribute('data-weekday', day.datum.weekday());
+        el.setAttribute('data-weekday', day.datum.day());
 
         var content = '';
 
-        content += '<h1 class="weekday-title">' + day.datum.locale('nl').format('dddd') + '</h1>';
-        content += '<img src="emojis/' + weekdayImg[day.datum.weekday()] + '.png" class="weekday-image">';
-        content += '<h2 class="monthday-title">' + day.datum.locale('nl').format('D MMMM') + '</h2>';
+        content += '<h1 class="weekday-title">' + day.datum.format('dddd') + '</h1>';
+        content += '<img src="emojis/' + weekdayImg[day.datum.day()] + '.png" class="weekday-image">';
+        content += '<h2 class="monthday-title">' + day.datum.format('D MMMM') + '</h2>';
 
         content += '<div class="event-icons">';
         day.events.forEach(function (ev) {
@@ -42,12 +42,12 @@ var Weeko = function (window, moment) {
         });
         content += '</div>';
 
-        if (day.datum.diff(moment().startOf('day')) === 0) {
+        if (day.datum.diff(dayjs().startOf('day')) === 0) {
             el.classList.add('today');
 
             // get hour
-            var semiHourOffset = moment().minutes() > 15 && moment().minutes() < 45 ? 12 : 0;
-            var modHour = (moment().add(15, 'minutes').startOf('hour').hours()) % 12;
+            var semiHourOffset = dayjs().minutes() > 15 && dayjs().minutes() < 45 ? 12 : 0;
+            var modHour = (dayjs().add(15, 'minutes').startOf('hour').hour()) % 12;
             var hourIndex = (modHour === 0 ? 12 : modHour) - 1 + semiHourOffset;
             console.log(semiHourOffset, hourIndex, timeImg[hourIndex]);
             content += '<div class="today-message"><img src="emojis/' + timeImg[hourIndex] + '.png"</div>';
@@ -118,7 +118,7 @@ var Weeko = function (window, moment) {
 
             // get weather
             day.weatherIcons = weather.list.filter(function (w) {
-                return moment(w.dt * 1000).startOf('day').diff(day.datum) === 0;
+                return dayjs(w.dt * 1000).startOf('day').diff(day.datum) === 0;
             }).map(function (a) {
                 day.maxTemp = window.Math.max(day.maxTemp, a.main.temp_max);
                 return 'https://openweathermap.org/img/w/' + a.weather[0].icon + '.png';
@@ -128,8 +128,8 @@ var Weeko = function (window, moment) {
             day.events = [];
 
             events.filter(function (e) {
-                var start = moment(e.start.date ? e.start.date : e.start.dateTime).startOf('day'),
-                    end = e.end.date ? moment(e.end.date).subtract(1, 'day') : moment(e.end.dateTime);
+                var start = dayjs(e.start.date ? e.start.date : e.start.dateTime).startOf('day'),
+                    end = e.end.date ? dayjs(e.end.date).subtract(1, 'day') : dayjs(e.end.dateTime);
 
                 return datum.diff(start) >= 0 && datum.diff(end) <= 0;
             }).forEach(function (e) {
@@ -144,7 +144,7 @@ var Weeko = function (window, moment) {
         return new Promise(function (resolve, reject) {
             var fromStorage = false, weatherData;
             try {
-                fromStorage = localStorage.getItem('weather') && moment.duration(moment().diff(moment(JSON.parse(localStorage.getItem('weather')).dateTime))).hours() < 3;
+                fromStorage = localStorage.getItem('weather') && dayjs().diff(dayjs(JSON.parse(localStorage.getItem('weather')).dateTime), 'hour') < 3;
                 weatherData = JSON.parse(JSON.parse(localStorage.getItem('weather')).rawData);
             } catch (e) {
                 fromStorage = false;
@@ -181,8 +181,8 @@ var Weeko = function (window, moment) {
     function listUpcomingEvents() {
         gapi.client.calendar.events.list({
             'calendarId': '9brfvbpc0vmifsudg7ggmnhh2c@group.calendar.google.com',
-            'timeMin': (moment().subtract(settings.daysBack, 'days')).toISOString(),
-            'timeMax': (moment().add(settings.daysAhead, 'days')).toISOString(),
+            'timeMin': (dayjs().subtract(settings.daysBack, 'days')).toISOString(),
+            'timeMax': (dayjs().add(settings.daysAhead, 'days')).toISOString(),
             'showDeleted': false,
             'singleEvents': true,
             'maxResults': 100,
@@ -200,8 +200,8 @@ var Weeko = function (window, moment) {
             events = es;
 
             // get a series of dates
-            var startDate = moment().startOf('day').subtract(settings.daysBack, 'days'),
-                endDate = moment().startOf('day').add(settings.daysAhead, 'days');
+            var startDate = dayjs().startOf('day').subtract(settings.daysBack, 'days'),
+                endDate = dayjs().startOf('day').add(settings.daysAhead, 'days');
 
             element.innerHTML = '';
 
@@ -212,7 +212,7 @@ var Weeko = function (window, moment) {
                     return renderDay(day);
                 });
 
-                datum = moment(datum).add(1, 'day');
+                datum = dayjs(datum).add(1, 'day');
             }
         });
 
@@ -2912,4 +2912,4 @@ var Weeko = function (window, moment) {
     return {
         init: init
     };
-}(window, moment);
+}(window, dayjs);

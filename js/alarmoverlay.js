@@ -1,16 +1,16 @@
 'use strict';
 
-/* global window, moment */
-var AlarmOverlay = (function (window, moment) {
+/* global window, dayjs */
+var AlarmOverlay = (function (window, dayjs) {
     'use strict';
 
     var element = document.createElement('div');
 
     function setState(date) {
-        var hours = date.hours();
+        var hours = date.hour();
 
         element.setAttribute('class', 'alarm-overlay');
-        if (date.weekday() === 0 || date.weekday() === 6) {
+        if (date.day() === 0 || date.day() === 6) {
             if (hours < 7 || hours>=21) {
                 element.classList.add('sleep');
             } else if (hours < 9) {
@@ -34,16 +34,16 @@ var AlarmOverlay = (function (window, moment) {
         element.appendChild(document.createElement('div'));
         document.body.appendChild(element);
 
-        setState(moment());
+        setState(dayjs());
 
         setInterval(function () {
-            setState(moment());
+            setState(dayjs());
         }, 1000 * 60)
     }
 
     return {
         init: init
     }
-})(window, moment);
+})(window, dayjs);
 
 AlarmOverlay.init();
