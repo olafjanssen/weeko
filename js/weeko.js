@@ -121,7 +121,7 @@ var Weeko = function (window, moment) {
                 return moment(w.dt * 1000).startOf('day').diff(day.datum) === 0;
             }).map(function (a) {
                 day.maxTemp = window.Math.max(day.maxTemp, a.main.temp_max);
-                return 'http://openweathermap.org/img/w/' + a.weather[0].icon + '.png';
+                return 'https://openweathermap.org/img/w/' + a.weather[0].icon + '.png';
             });
 
             // get events
@@ -195,7 +195,7 @@ var Weeko = function (window, moment) {
     }
 
     function loadRest(es) {
-        loadJSON('http://api.openweathermap.org/data/2.5/forecast?q=Geldrop,NL&appid=35a91f92624095eff547f4c8fdf15807').then(function (w) {
+        loadJSON('https://api.openweathermap.org/data/2.5/forecast?q=Geldrop,NL&appid=35a91f92624095eff547f4c8fdf15807').then(function (w) {
             weather = w;
             events = es;
 
