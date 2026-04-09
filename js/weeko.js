@@ -42,6 +42,7 @@ var Weeko = (function (window, dayjs) {
 
     content +=
       '<div class="weather-temp">' +
+      (day.currentTemp ? Math.round(day.currentTemp - 272.15) + "°C / " : "") +
       (day.maxTemp ? Math.round(day.maxTemp - 272.15) + "°C" : "") +
       "</div>";
     content += '<div class="weather-icons">';
@@ -132,41 +133,65 @@ var Weeko = (function (window, dayjs) {
       day.maxTemp = 0;
 
       // get weather
-      day.weatherIcons = weather.list
-        .filter(function (w) {
-          return (
-            dayjs(w.dt * 1000)
-              .startOf("day")
-              .diff(day.datum) === 0
-          );
-        })
-        .map(function (a) {
-          day.maxTemp = window.Math.max(day.maxTemp, a.main.temp_max);
-          return (
-            "https://openweathermap.org/img/w/" + a.weather[0].icon + ".png"
-          );
-        });
+      day.weatherIcons = [];
+      day.currentTemp = null;
+      day.maxTemp = 0;
+
+      if (weather && weather.list && weather.list.length) {
+        weather.list
+          .filter(function (w) {
+            return (
+              dayjs(w.dt * 1000)
+                .startOf("day")
+                .diff(day.datum) === 0
+            );
+          })
+          .forEach(function (a) {
+            day.maxTemp = window.Math.max(day.maxTemp, a.main.temp_max);
+
+            // For current day, capture current temperature
+            if (day.datum.diff(dayjs().startOf("day")) === 0) {
+              day.currentTemp = a.main.temp;
+            }
+
+            // Only add weather icon if it's different from previous one
+            var iconUrl =
+              "https://openweathermap.org/img/w/" + a.weather[0].icon + ".png";
+            if (
+              day.weatherIcons.length === 0 ||
+              day.weatherIcons[day.weatherIcons.length - 1] !== iconUrl
+            ) {
+              day.weatherIcons.push(iconUrl);
+              // Limit to maximum 3 different weather icons per day to prevent visual clutter
+              if (day.weatherIcons.length > 3) {
+                day.weatherIcons.shift(); // Remove oldest icon if we exceed the limit
+              }
+            }
+          });
+      }
 
       // get events
       day.events = [];
 
-      events
-        .filter(function (e) {
-          var start = dayjs(
-              e.start.date ? e.start.date : e.start.dateTime,
-            ).startOf("day"),
-            end = e.end.date
-              ? dayjs(e.end.date).subtract(1, "day")
-              : dayjs(e.end.dateTime);
+      if (events && events.length) {
+        events
+          .filter(function (e) {
+            var start = dayjs(
+                e.start.date ? e.start.date : e.start.dateTime,
+              ).startOf("day"),
+              end = e.end.date
+                ? dayjs(e.end.date).subtract(1, "day")
+                : dayjs(e.end.dateTime);
 
-          return datum.diff(start) >= 0 && datum.diff(end) <= 0;
-        })
-        .forEach(function (e) {
-          day.events.push({
-            icons: translateSummary(e.description),
-            description: e.summary,
+            return datum.diff(start) >= 0 && datum.diff(end) <= 0;
+          })
+          .forEach(function (e) {
+            day.events.push({
+              icons: translateSummary(e.description),
+              description: e.summary,
+            });
           });
-        });
+      }
 
       resolve(day);
     });
@@ -318,30 +343,104 @@ var Weeko = (function (window, dayjs) {
       });
   }
 
-  function loadRest(es) {
+  function detectLocation(callback) {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          // Use reverse geocoding to get city name from coordinates
+          var lat = position.coords.latitude;
+          var lon = position.coords.longitude;
+
+          // For now, use coordinates directly (format: lat,lon)
+          // In a production app, you would use a reverse geocoding API here
+          var location = lat.toFixed(4) + "," + lon.toFixed(4);
+          callback(location);
+        },
+        function (error) {
+          console.log("Geolocation error:", error);
+          callback(null); // Continue with default location
+        },
+        { timeout: 10000, maximumAge: 60000 },
+      );
+    } else {
+      console.log("Geolocation not supported");
+      callback(null);
+    }
+  }
+
+  function loadWeatherData(location, apiKey) {
+    console.log("Loading weather data");
     loadJSON(
-      "https://api.openweathermap.org/data/2.5/forecast?q=Geldrop,NL&appid=35a91f92624095eff547f4c8fdf15807",
-    ).then(function (w) {
-      weather = w;
-      events = es;
+      "https://api.openweathermap.org/data/2.5/forecast?q=" +
+        encodeURIComponent(location) +
+        "&appid=" +
+        apiKey,
+    )
+      .then(function (w) {
+        weather = w;
 
-      // get a series of dates
-      var startDate = dayjs()
-          .startOf("day")
-          .subtract(settings.daysBack, "days"),
-        endDate = dayjs().startOf("day").add(settings.daysAhead, "days");
+        // get a series of dates
+        var startDate = dayjs()
+            .startOf("day")
+            .subtract(settings.daysBack, "days"),
+          endDate = dayjs().startOf("day").add(settings.daysAhead, "days");
 
-      element.innerHTML = "";
+        element.innerHTML = "";
 
-      var datum = startDate;
-      while (datum < endDate) {
-        compileDayData(datum).then(function (day) {
-          return renderDay(day);
-        });
+        var datum = startDate;
+        while (datum < endDate) {
+          compileDayData(datum).then(function (day) {
+            return renderDay(day);
+          });
 
-        datum = dayjs(datum).add(1, "day");
-      }
-    });
+          datum = dayjs(datum).add(1, "day");
+        }
+      })
+      .catch(function (error) {
+        console.error("Error loading weather data:", error);
+        // Show error in UI if possible
+        if (typeof showStatus !== "undefined") {
+          showStatus("Error loading weather data: " + error.message, "error");
+        }
+        // Continue with cached data if available
+        if (localStorage.getItem("weather")) {
+          try {
+            weather = JSON.parse(
+              JSON.parse(localStorage.getItem("weather")).rawData,
+            );
+          } catch (e) {
+            console.error("Failed to load cached weather data:", e);
+          }
+        }
+      });
+  }
+
+  function loadRest(es) {
+    // Store events globally so they're available for rendering
+    events = es;
+    
+    // Get OpenWeatherMap API key from window object (injected by GitHub Pages) or localStorage
+    var OPENWEATHERMAP_API_KEY =
+      window.OPENWEATHERMAP_API_KEY ||
+      localStorage.getItem("openweathermapApiKey");
+
+    // Default location (can be overridden by autodetection)
+    var location = localStorage.getItem("weatherLocation") || "Geldrop,NL";
+
+    // Try to autodetect location if not set in localStorage
+    if (!localStorage.getItem("weatherLocation")) {
+      detectLocation(function (detectedLocation) {
+        if (detectedLocation) {
+          location = detectedLocation;
+          localStorage.setItem("weatherLocation", location);
+        }
+        loadWeatherData(location, OPENWEATHERMAP_API_KEY);
+      });
+      return;
+    }
+
+    // Load weather data with current location
+    loadWeatherData(location, OPENWEATHERMAP_API_KEY);
   }
 
   function init(selector, options) {

@@ -31,10 +31,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Inject API key
+      - name: Inject API keys
         run: |
-          # Create a script tag to inject the API key before the main script
+          # Create a script tag to inject the API keys before the main script
           sed -i '1i<script>window.GOOGLE_API_KEY = "${{ secrets.GOOGLE_API_KEY }}";</script>' index.html
+          sed -i '1i<script>window.OPENWEATHERMAP_API_KEY = "${{ secrets.OPENWEATHERMAP_API_KEY }}";</script>' index.html
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

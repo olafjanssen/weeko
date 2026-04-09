@@ -36,6 +36,10 @@
             }
             .input-group {
                 margin: 15px 0;
+                display: flex;
+            }
+            .input-group input[type="text"] {
+                flex: 1;
             }
             input[type="text"] {
                 width: 100%;
@@ -52,6 +56,17 @@
                 border-radius: 4px;
                 cursor: pointer;
                 font-size: 16px;
+            }
+            .clear-button {
+                background: #f1f1f1;
+                color: #666;
+                padding: 10px 15px;
+                font-size: 14px;
+                margin-left: 5px;
+                width: auto;
+            }
+            .clear-button:hover {
+                background: #e0e0e0;
             }
             button:hover {
                 background: #3367d6;
@@ -110,6 +125,10 @@
                     <strong>Optional:</strong> Add your own Google API key for
                     development (get one from Google Cloud Console).
                 </p>
+                <p>
+                    <strong>Optional:</strong> Add your OpenWeatherMap API key for
+                    weather data (get a free key from <a href="https://openweathermap.org/api" target="_blank">OpenWeatherMap</a>).
+                </p>
             </div>
 
             <div class="input-group">
@@ -128,6 +147,17 @@
                     placeholder="Optional: Paste Google API key (for development)"
                     title="Get your own API key from Google Cloud Console"
                 />
+                <button onclick="clearApiKey()" class="clear-button" title="Clear Google API key">✕</button>
+            </div>
+
+            <div class="input-group">
+                <input
+                    type="text"
+                    id="weather-api-key-input"
+                    placeholder="Optional: Paste OpenWeatherMap API key"
+                    title="Get your free API key from https://openweathermap.org/api"
+                />
+                <button onclick="clearWeatherApiKey()" class="clear-button" title="Clear Weather API key">✕</button>
             </div>
 
             <div class="input-group">
@@ -220,7 +250,7 @@
                 try {
                     CALENDAR_ID = extractCalendarId(rawInput);
 
-                    // Save API key if provided
+                    // Save Google API key if provided
                     const apiKeyInput =
                         document.getElementById("api-key-input");
                     const apiKey = apiKeyInput.value.trim();
@@ -230,6 +260,14 @@
                         API_KEY =
                             window.GOOGLE_API_KEY ||
                             localStorage.getItem("weekoApiKey");
+                    }
+
+                    // Save OpenWeatherMap API key if provided
+                    const weatherApiKeyInput =
+                        document.getElementById("weather-api-key-input");
+                    const weatherApiKey = weatherApiKeyInput.value.trim();
+                    if (weatherApiKey) {
+                        localStorage.setItem("openweathermapApiKey", weatherApiKey);
                     }
 
                     // Save to localStorage
@@ -271,10 +309,16 @@
                         : window.GOOGLE_API_KEY
                           ? " (using injected API key)"
                           : "";
+                    const weatherApiKeyInfo = localStorage.getItem("openweathermapApiKey")
+                        ? " (using custom weather API key)"
+                        : window.OPENWEATHERMAP_API_KEY
+                          ? " (using injected weather API key)"
+                          : "";
                     displayElement.innerHTML =
                         "<strong>Current Calendar:</strong> " +
                         CALENDAR_ID +
                         apiKeyInfo +
+                        weatherApiKeyInfo +
                         ' | <a href="#" onclick="clearCalendarId()">Change</a>';
                 } else {
                     displayElement.textContent = "No calendar selected";
@@ -286,6 +330,7 @@
              */
             function clearCalendarId() {
                 localStorage.removeItem("weekoCalendarId");
+                // Don't clear API keys when clearing calendar ID
                 CALENDAR_ID = "";
                 document.getElementById("calendar-input").value = "";
                 showStatus(
@@ -311,6 +356,15 @@
                     localStorage.getItem("weekoApiKey");
             }
 
+            function clearWeatherApiKey() {
+                localStorage.removeItem("openweathermapApiKey");
+                document.getElementById("weather-api-key-input").value = "";
+                showStatus(
+                    "Weather API key cleared. Using default or injected key.",
+                    "info",
+                );
+            }
+
             /**
              * Load calendar ID from localStorage on page load
              */
@@ -318,11 +372,21 @@
                 try {
                     const savedId = localStorage.getItem("weekoCalendarId");
                     const savedApiKey = localStorage.getItem("weekoApiKey");
+                    const savedWeatherApiKey = localStorage.getItem("openweathermapApiKey");
 
                     if (savedId) {
                         CALENDAR_ID = savedId;
                         document.getElementById("calendar-input").value =
                             savedId;
+                        
+                        // Load saved API keys into input fields
+                        if (savedApiKey) {
+                            document.getElementById("api-key-input").value = savedApiKey;
+                        }
+                        if (savedWeatherApiKey) {
+                            document.getElementById("weather-api-key-input").value = savedWeatherApiKey;
+                        }
+                        
                         showStatus(
                             "Loaded saved calendar: " + savedId,
                             "success",
