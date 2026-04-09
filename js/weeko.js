@@ -42,8 +42,8 @@ var Weeko = (function (window, dayjs) {
 
     content +=
       '<div class="weather-temp">' +
-      (day.currentTemp ? Math.round(day.currentTemp - 272.15) + "°C / " : "") +
-      (day.maxTemp ? Math.round(day.maxTemp - 272.15) + "°C" : "") +
+      (day.currentTemp ? Math.round(day.currentTemp - 273.15) + "°C / " : "") +
+      (day.maxTemp ? Math.round(day.maxTemp - 273.15) + "°C" : "") +
       "</div>";
     content += '<div class="weather-icons">';
     day.weatherIcons.forEach(function (wi) {
@@ -150,7 +150,10 @@ var Weeko = (function (window, dayjs) {
             day.maxTemp = window.Math.max(day.maxTemp, a.main.temp_max);
 
             // For current day, capture current temperature from the first element
-            if (day.datum.diff(dayjs().startOf("day")) === 0 && !day.currentTemp) {
+            if (
+              day.datum.diff(dayjs().startOf("day")) === 0 &&
+              !day.currentTemp
+            ) {
               day.currentTemp = a.main.temp;
             }
 
