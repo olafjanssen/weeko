@@ -150,7 +150,7 @@ var Weeko = (function (window, dayjs) {
             day.maxTemp = window.Math.max(day.maxTemp, a.main.temp_max);
 
             // For current day, capture current temperature from the first element
-            if (!day.currentTemp) {
+            if (day.datum.diff(dayjs().startOf("day")) === 0 && !day.currentTemp) {
               day.currentTemp = a.main.temp;
             }
 
