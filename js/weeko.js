@@ -149,8 +149,8 @@ var Weeko = (function (window, dayjs) {
           .forEach(function (a) {
             day.maxTemp = window.Math.max(day.maxTemp, a.main.temp_max);
 
-            // For current day, capture current temperature
-            if (day.datum.diff(dayjs().startOf("day")) === 0) {
+            // For current day, capture current temperature from the first element
+            if (!day.currentTemp) {
               day.currentTemp = a.main.temp;
             }
 
@@ -418,7 +418,7 @@ var Weeko = (function (window, dayjs) {
   function loadRest(es) {
     // Store events globally so they're available for rendering
     events = es;
-    
+
     // Get OpenWeatherMap API key from window object (injected by GitHub Pages) or localStorage
     var OPENWEATHERMAP_API_KEY =
       window.OPENWEATHERMAP_API_KEY ||
