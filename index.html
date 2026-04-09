@@ -105,6 +105,10 @@
                     Or paste a Google Calendar shareable link and the ID will be
                     extracted automatically.
                 </p>
+                <p>
+                    <strong>Optional:</strong> Add your own Google API key for
+                    development (get one from Google Cloud Console).
+                </p>
             </div>
 
             <div class="input-group">
@@ -113,6 +117,15 @@
                     id="calendar-input"
                     placeholder="Paste calendar ID or shareable link here..."
                     title="Example: your-calendar-id@group.calendar.google.com or full Google Calendar URL"
+                />
+            </div>
+
+            <div class="input-group">
+                <input
+                    type="text"
+                    id="api-key-input"
+                    placeholder="Optional: Paste Google API key (for development)"
+                    title="Get your own API key from Google Cloud Console"
                 />
             </div>
 
@@ -140,7 +153,9 @@
         <script src="js/alarmoverlay.js"></script>
         <script type="text/javascript">
             // API key for public calendar access
-            var API_KEY = "AIzaSyCs_q7BXvg8NgUwH1OFjmSrwLMwxdvORBI";
+            // Must be injected by GitHub Pages environment or set via localStorage
+            var API_KEY =
+                window.GOOGLE_API_KEY || localStorage.getItem("weekoApiKey");
 
             // Google Calendar API discovery document
             var DISCOVERY_DOCS = [
@@ -204,6 +219,18 @@
                 try {
                     CALENDAR_ID = extractCalendarId(rawInput);
 
+                    // Save API key if provided
+                    const apiKeyInput =
+                        document.getElementById("api-key-input");
+                    const apiKey = apiKeyInput.value.trim();
+                    if (apiKey) {
+                        localStorage.setItem("weekoApiKey", apiKey);
+                        // Reload API_KEY variable
+                        API_KEY =
+                            window.GOOGLE_API_KEY ||
+                            localStorage.getItem("weekoApiKey");
+                    }
+
                     // Save to localStorage
                     localStorage.setItem("weekoCalendarId", CALENDAR_ID);
 
@@ -238,9 +265,15 @@
                 const displayElement =
                     document.getElementById("current-calendar");
                 if (CALENDAR_ID) {
+                    const apiKeyInfo = localStorage.getItem("weekoApiKey")
+                        ? " (using custom API key)"
+                        : window.GOOGLE_API_KEY
+                          ? " (using injected API key)"
+                          : "";
                     displayElement.innerHTML =
                         "<strong>Current Calendar:</strong> " +
                         CALENDAR_ID +
+                        apiKeyInfo +
                         ' | <a href="#" onclick="clearCalendarId()">Change</a>';
                 } else {
                     displayElement.textContent = "No calendar selected";
@@ -262,11 +295,29 @@
             }
 
             /**
+             * Clear API key from localStorage
+             */
+            function clearApiKey() {
+                localStorage.removeItem("weekoApiKey");
+                document.getElementById("api-key-input").value = "";
+                showStatus(
+                    "API key cleared. Using default or injected key.",
+                    "info",
+                );
+                // Reload API_KEY variable
+                API_KEY =
+                    window.GOOGLE_API_KEY ||
+                    localStorage.getItem("weekoApiKey");
+            }
+
+            /**
              * Load calendar ID from localStorage on page load
              */
             function loadSavedCalendarId() {
                 try {
                     const savedId = localStorage.getItem("weekoCalendarId");
+                    const savedApiKey = localStorage.getItem("weekoApiKey");
+
                     if (savedId) {
                         CALENDAR_ID = savedId;
                         document.getElementById("calendar-input").value =
@@ -284,6 +335,12 @@
                             "info",
                         );
                     }
+
+                    if (savedApiKey) {
+                        document.getElementById("api-key-input").value =
+                            savedApiKey;
+                    }
+
                     updateCurrentCalendarDisplay();
                 } catch (error) {
                     console.error("Error loading from localStorage:", error);
