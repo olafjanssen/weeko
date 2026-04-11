@@ -548,7 +548,7 @@ var Weeko = (function (window, dayjs) {
     "1f52e", // 🔮 Tuesday (Tyr's day - Norse god)
     "26a1", // ⚡ Wednesday (Woden's day - Odin)
     "1f528", // 🔨 Thursday (Thor's day - hammer)
-    "1f48b", // 💋 Friday (Frigg's day - love goddess)
+    "1f987", // 🦇
     "1f31f", // 🌟 Saturday (Saturn's day - star)
   ];
 
