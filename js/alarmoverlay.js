@@ -11,19 +11,19 @@ var AlarmOverlay = (function (window, dayjs) {
 
     element.setAttribute("class", "alarm-overlay");
     if (date.day() === 0 || date.day() === 6) {
-      if (hours < 7 || hours >= 21) {
+      if (hours < 7 || hours >= 22) {
         element.classList.add("sleep");
-      } else if (hours < 9) {
+      } else if (hours < 8) {
         element.classList.add("hush");
-      } else if (hours >= 20) {
+      } else if (hours >= 21) {
         element.classList.add("read");
       }
     } else {
-      if (hours < 6 || hours >= 21) {
+      if (hours < 6 || hours >= 22) {
         element.classList.add("sleep");
       } else if (hours < 7) {
         element.classList.add("hush");
-      } else if (hours >= 20) {
+      } else if (hours >= 21) {
         element.classList.add("read");
       }
     }
