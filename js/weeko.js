@@ -373,9 +373,14 @@ var Weeko = (function (window, dayjs) {
 
   function loadWeatherData(location, apiKey) {
     console.log("Loading weather data");
+    var lat = location.split(",")[0];
+    var lon = location.split(",")[1];
+
     loadJSON(
-      "https://api.openweathermap.org/data/2.5/forecast?q=" +
-        encodeURIComponent(location) +
+      "https://api.openweathermap.org/data/2.5/forecast?lat=" +
+        encodeURIComponent(lat) +
+        "&lon=" +
+        encodeURIComponent(lon) +
         "&appid=" +
         apiKey,
     )
@@ -428,7 +433,7 @@ var Weeko = (function (window, dayjs) {
       localStorage.getItem("openweathermapApiKey");
 
     // Default location (can be overridden by autodetection)
-    var location = localStorage.getItem("weatherLocation") || "Geldrop,NL";
+    var location = localStorage.getItem("weatherLocation");
 
     // Try to autodetect location if not set in localStorage
     if (!localStorage.getItem("weatherLocation")) {
